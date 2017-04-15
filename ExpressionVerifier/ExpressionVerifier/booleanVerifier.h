@@ -13,7 +13,17 @@ using namespace std;
 
 class booleanVerifier {
 
+struct TreeNode {
+	char key;
+	TreeNode *leftChildPointer;
+	TreeNode *rightChildPointer;
+};
+
 public:
 	booleanVerifier(string identifier);
 	~booleanVerifier();
+	bool isOperatorValid(char key);
+	void insertIntoTree(char key, TreeNode *leaf);
+	void searchTree(TreeNode leaf, char key);
+	TreeNode *rootPointer = NULL;
 };

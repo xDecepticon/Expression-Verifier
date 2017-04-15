@@ -18,6 +18,9 @@
     <ClCompile Include="ExpressionVerifier.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="booleanVerifier.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="booleanVerifier.h">
