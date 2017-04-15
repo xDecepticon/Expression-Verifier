@@ -1,0 +1,5 @@
+﻿  EECS-3550-P2.cpp
+c:\users\eric.klostermeyer\desktop\fall2016\eecs-3550-p2\eecs-3550-p2\eecs-3550-p2.cpp(114): warning C4018: '<': signed/unsigned mismatch
+c:\users\eric.klostermeyer\desktop\fall2016\eecs-3550-p2\eecs-3550-p2\eecs-3550-p2.cpp(68): warning C4715: 'tree::search': not all control paths return a value
+  EECS-3550-P2.vcxproj -> C:\Users\eric.klostermeyer\Desktop\fall2016\EECS-3550-P2\Debug\EECS-3550-P2.exe
+  EECS-3550-P2.vcxproj -> C:\Users\eric.klostermeyer\Desktop\fall2016\EECS-3550-P2\Debug\EECS-3550-P2.pdb (Full PDB)
