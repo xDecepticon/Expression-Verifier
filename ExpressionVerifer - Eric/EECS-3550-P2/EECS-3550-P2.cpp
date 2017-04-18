@@ -6,7 +6,7 @@
 #include <algorithm>
 #include <iostream>
 
-struct node {
+/*struct node {
 	char key;
 	node *left;
 	node *right;
@@ -17,7 +17,7 @@ struct tree {
 		bool isOperator(char key);
 		void insert(char key);
 		void insert(char key, node *leaf);
-		node search(node leaf);
+		node *search(struct node *leaf);
 		node *root = NULL;
 };
 
@@ -57,16 +57,16 @@ void tree::insert(char key, node *leaf) {
 	}
 }
 
-node tree::search(node leaf)
+node * tree::search(struct node *leaf)
 {
-	// search til bottom of tree
-	// pass in root to start
-	// Currently, this loops.
-	if (leaf.right->right != NULL) {
-		search(*leaf.right);
+	if (leaf->right->right != NULL) {
+		search(leaf->right);
 	}
-	else return leaf;
-}
+	else {
+		std::cout << leaf->key;
+		return leaf;
+	}
+}*/
 
 
 
@@ -85,13 +85,37 @@ node tree::search(node leaf)
 
 
 // This one is separate.
-bool isOperator(std::string key) {
-	if ((key == "+") || (key == "-") || (key == "*") || (key == "^")) {
+bool isOperator(char key) {
+	if ((key == '+') || (key == '-') || (key == '*') || (key == '^')) {
 		return true;
 	}
 	else {
 		return false;
 	}
+}
+
+std::string formStr(std::string str) {
+	std::string rstr;
+	for (int i = 0; i < str.size(); i++) {
+		if (isOperator(str.at(i))) {
+			if (str.at(i) == '+') {
+				rstr += str.at(++i);
+			}
+			else {
+				// get next char, loop until all characters are done
+				char prev = str.at(i - 1);
+				char next = str.at(++i);
+				for (int j = (int)(next - '0'); j > 1; j--) {
+					rstr += prev;
+				}
+			}
+		}
+		else {
+			rstr += str.at(i);
+		}
+		std::cout << rstr << '\n';
+	}
+	return rstr;
 }
 
 int main()
@@ -100,30 +124,42 @@ int main()
 	std::string in = "2 * 3 + 1 = 2 + 2 + 2 + 1";
 	in.erase(std::remove(in.begin(), in.end(), ' '), in.end()); // remove all spaces
 
-	/*size_t numOfEqSigns = std::count(in.begin(), in.end(), '='); // count number of equal signs (may not be needed))*/
+	signed int numOfEqSigns = std::count(in.begin(), in.end(), '='); // count number of equal signs
+
+
 	// if no equal sign, throw error at user and quit
+	if (numOfEqSigns == 0) { std::cout << "Expression cannot be compared."; exit(1); }
 
 	std::string inOne = in.substr(0, in.find('='));
 	std::string inTwo = in.substr(in.find('=') + 1, in.size());
-	
-	tree treeOne;
-	tree treeTwo;
 
+	std::string strarry[2]; 
+	strarry[0] = inOne;
+	strarry[1] = inTwo;
 
+	// For the string, there isn't a defined order of operations for * or +. 
+	// We /assumed/ it goes in order.
 
-	// create right side tree
-	for (int i = 0; i < inOne.size(); i++) {
-		// insert elements into tree
-		treeOne.insert(inOne.at(i));
+	std::string rstrarry[2];
+
+	for (int i = 0; numOfEqSigns >= 0 ; numOfEqSigns--, i++) {
+		rstrarry[i] = formStr(strarry[i]);
 	}
 
-	// evaluate results
-	node sNode = treeOne.search(*treeOne.root);
+
 
 	std::cout << inOne;
-
-
 	// compare and output
+	for (int i = strarry->size(), j = 0; i > 0; i--, j++) {
+		std::string str = rstrarry[j];
+		for (int k = 0; k < (size_t)strarry; k++) {
+			if (str != rstrarry[k])
+				std::cout << str << "!=" << rstrarry[k];
+				exit(1);
+		}
+	}
+
+	std::cout << "All equations are valid!";
 
     return 0;
 }
