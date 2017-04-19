@@ -100,15 +100,13 @@ void infixToPostfix(char *str) {
 		*out = pop(&s);
 		out++;
 	}
+	*out = '\0';
 	printf("%s\n", outp);
 }
 
 int main()
 {
 	std::string buf("2*3+1"); // input
-	char *cstr = new char[buf.length() + 1];
-	strcpy(cstr, buf.c_str());
-
 	infixToPostfix(cstr);
     return 0;
 }
