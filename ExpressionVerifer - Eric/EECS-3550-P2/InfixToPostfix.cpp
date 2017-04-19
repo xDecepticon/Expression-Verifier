@@ -63,7 +63,7 @@ bool orderCheck(char key1, char key2) {
 	else return false;
 }
 
-void infixToPostfix(char *str) {
+void infixToPostfix(const char *str) {
 	stack s;
 	startStack(&s);
 	char *out = (char *) malloc(strlen(str));
