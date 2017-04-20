@@ -146,22 +146,29 @@ int main()
 		rstrarry[i] = formStr(strarry[i]);
 	}
 
-
-
-	std::cout << inOne;
-	// compare and output
 	for (int i = strarry->size(), j = 0; i > 0; i--, j++) {
 		std::string str = rstrarry[j];
-		for (int k = 0; k < (size_t)strarry; k++) {
+
+		for (int i = strarry->size(), k = 1; i > 0; i--, k++) {
+
 			if (str != rstrarry[k])
 				std::cout << str << "!=" << rstrarry[k];
-				exit(1);
+			else
+			{
+				std::cout << str << "=" << rstrarry[k];
+			}
+			std::cin.get();
+			exit(1);
 		}
 	}
 
 	std::cout << "All equations are valid!";
 
-    return 0;
+	char WaitChar;
+
+	std::cout << "\nProccessing finished. Press 'Enter' to exit the program: \n\n";
+	std::cin.get(WaitChar);
+	return 0;
 }
 
 

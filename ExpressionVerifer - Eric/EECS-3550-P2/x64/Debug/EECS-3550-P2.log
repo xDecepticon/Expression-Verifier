@@ -1,0 +1,6 @@
+﻿  EECS-3550-P2.cpp
+c:\sandbox\expression-verifier\expressionverifer - eric\eecs-3550-p2\eecs-3550-p2.cpp(127): warning C4244: 'initializing': conversion from '__int64' to 'int', possible loss of data
+c:\sandbox\expression-verifier\expressionverifer - eric\eecs-3550-p2\eecs-3550-p2.cpp(149): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+c:\sandbox\expression-verifier\expressionverifer - eric\eecs-3550-p2\eecs-3550-p2.cpp(152): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+  EECS-3550-P2.vcxproj -> C:\Sandbox\Expression-Verifier\ExpressionVerifer - Eric\x64\Debug\EECS-3550-P2.exe
+  EECS-3550-P2.vcxproj -> C:\Sandbox\Expression-Verifier\ExpressionVerifer - Eric\x64\Debug\EECS-3550-P2.pdb (Full PDB)
