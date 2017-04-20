@@ -4,12 +4,14 @@
 #include <fstream>
 #include <sstream>
 #include <vector>
+#include <algorithm>
 
 #define MAX 100
 
 struct stack {
 	char items[MAX];
 	int iItems[MAX];
+	std::string strI[MAX];
 	int top;
 };
 
@@ -21,6 +23,10 @@ void iPush(stack *s, int key) {
 	s->iItems[++s->top] = key;
 }
 
+void sPush(stack *s, std::string key) {
+	s->strI[++s->top] = key;
+}
+
 char pop(stack *s) {
 	return s->items[s->top--];
 }
@@ -29,12 +35,20 @@ int iPop(stack *s) {
 	return s->iItems[s->top--];
 }
 
+std::string sPop(stack *s) {
+	return s->strI[s->top--];
+}
+
 char peek(stack *s) {
 	return s->items[s->top];
 }
 
 char iPeek(stack *s) {
 	return s->iItems[s->top];
+}
+
+std::string sPeek(stack *s) {
+	return s->strI[s->top];
 }
 
 bool empty(stack *s) {
@@ -48,6 +62,28 @@ void startStack(stack *s) {
 	s->top = -1;
 }
 
+
+stack parser(std::string str) {
+	// take an input string and break it up.
+	stack s;
+	startStack(&s);
+	std::string in = str;
+	in.erase(std::remove(in.begin(), in.end(), ' '), in.end()); // remove all spaces
+
+	int numOfEqSigns = std::count(in.begin(), in.end(), '='); // count number of equal signs
+
+
+	// if no equal sign, throw error at user and quit
+	if (numOfEqSigns == 0) { std::cout << "Expression cannot be compared."; exit(1); }
+
+	std::string inOne = in.substr(0, in.find('='));
+	std::string inTwo = in.substr(in.find('=') + 1, in.size());
+
+	sPush(&s, inOne);
+	sPush(&s, inTwo);
+
+	return s;
+}
 
 bool isOperator(char operatorValue) {
 
@@ -158,11 +194,16 @@ void postfixCalc(const char *str) {
 }
 
 void infixToPostfix(const char *str) {
-	stack s;
-	//Stack<char> s;
+	stack s; // current stack
 	startStack(&s);
 	char *out = (char *)malloc(strlen(str));
 	char *outp = out;
+
+	stack as; // store stack
+	startStack(&as); 
+	as = parser(str);
+	stack bs; // result stack
+	startStack(&bs);
 
 	while (*str != '\0') {
 		// case 1: if '(' push to stack
