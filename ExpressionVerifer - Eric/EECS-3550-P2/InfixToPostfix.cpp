@@ -4,11 +4,12 @@
 #include "stdafx.h"
 #include <string>
 #include <iostream>
-#include <vector>
+#include <cmath>
 #define MAX 100
 
 struct stack {
 	char items[MAX];
+	int iItems[MAX];
 	int top;
 };
 
@@ -16,12 +17,24 @@ void push(stack *s, char key) {
 	s->items[++s->top] = key;
 }
 
+void iPush(stack *s, int key) {
+	s->iItems[++s->top] = key;
+}
+
 char pop(stack *s) {
 	return s->items[s->top--];
 }
 
+int iPop(stack *s) {
+	return s->iItems[s->top--];
+}
+
 char peek(stack *s) {
 	return s->items[s->top];
+}
+
+char iPeek(stack *s) {
+	return s->iItems[s->top];
 }
 
 bool empty(stack *s) {
@@ -63,6 +76,44 @@ bool orderCheck(char key1, char key2) {
 	else return false;
 }
 
+void postfixCalc(const char *str) {
+	stack s;
+	startStack(&s);
+	while (*str != '\0') {
+		if (!isOperator(*str)) {
+			iPush(&s, *str - 0x30);
+		}
+		else {
+			if (*str == '+') {
+				int o2 = iPop(&s);
+				int o1 = iPop(&s);
+				iPush(&s, (o1 + o2));
+			}
+			else if (*str == '-') {
+				int o2 = iPop(&s);
+				int o1 = iPop(&s);
+				iPush(&s, (o1 - o2));
+			}
+			else if (*str == '*') {
+				int o2 = iPop(&s);
+				int o1 = iPop(&s);
+				iPush(&s, (o1 * o2));
+			}
+			else if (*str == '^') {
+				int o2 = iPop(&s);
+				int o1 = iPop(&s);
+				iPush(&s, (pow(o1, o2)));
+			}
+			else {
+				std::cout << "Invalid Operation: " << *str;
+				exit(1);
+			}
+		}
+		str++;
+	}
+	std::cout << iPop(&s);
+}
+
 void infixToPostfix(const char *str) {
 	stack s;
 	startStack(&s);
@@ -102,12 +153,14 @@ void infixToPostfix(const char *str) {
 	}
 	*out = '\0';
 	printf("%s\n", outp);
+	postfixCalc(outp);
 }
 
 int main()
 {
-	std::string buf("2*3+1"); // input
-	infixToPostfix(cstr);
+	std::string buf("(1+1)*2+2+1"); // input
+
+	infixToPostfix(buf.c_str());
     return 0;
 }
 
