@@ -74,9 +74,9 @@ stack parser(std::string str) {
 
 
 															  // if no equal sign, throw error at user and quit
-	if (numOfEqSigns == 0) 
-	{ 
-		std::cout << "Expression cannot be compared."; 
+	if (numOfEqSigns == 0)
+	{
+		std::cout << "Expression cannot be compared.";
 		outputFile << "Expression is invalid" << std::endl;
 		exit(1);
 	}
@@ -215,11 +215,11 @@ bool infixToPostfix(const char *str) {
 	std::string strarry[2];
 	int it = 1;
 
-	while (!empty(&inputStack)) 
+	while (!empty(&inputStack))
 	{
 		const char *tempString = sPop(&inputStack).c_str();
 		strarry[it--] = tempString;
-		
+
 		while (*str != '\0') {
 			// case 1: if '(' push to stack
 			if (*str == '(')
@@ -259,7 +259,7 @@ bool infixToPostfix(const char *str) {
 		*out = '\0';
 		iPush(&outputStack, 0);//postfixCalc(outp));
 	}
-	
+
 	//printf("%s\n", outp);
 	//std::string rstrarry[2];
 	//rstrarry[1] = sPop(&outputStack).c_str();
@@ -627,7 +627,7 @@ bool expressionParser(std::fstream &inputfile, parserType type, std::ofstream &o
 			{
 				return false;
 			}
-			
+
 			break;
 
 		case stringType:
