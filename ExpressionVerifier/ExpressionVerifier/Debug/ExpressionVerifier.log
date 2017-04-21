@@ -1,4 +1,4 @@
 ﻿  ExpressionVerifier.cpp
-c:\sandbox\expression-verifier\expressionverifier\expressionverifier\expressionverifier.cpp(148): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+c:\sandbox\expression-verifier\expressionverifier\expressionverifier\expressionverifier.cpp(190): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
   ExpressionVerifier.vcxproj -> C:\Sandbox\Expression-Verifier\ExpressionVerifier\Debug\ExpressionVerifier.exe
   ExpressionVerifier.vcxproj -> C:\Sandbox\Expression-Verifier\ExpressionVerifier\Debug\ExpressionVerifier.pdb (Full PDB)

@@ -1,15 +1,18 @@
-
 #include <iostream>
 #include <string>
 #include <fstream>
 #include <sstream>
 #include <vector>
+#include <algorithm>
+std::ofstream outputFile("outputFile.txt");
 
 #define MAX 100
+
 
 struct stack {
 	char items[MAX];
 	int iItems[MAX];
+	std::string strI[MAX];
 	int top;
 };
 
@@ -21,6 +24,10 @@ void iPush(stack *s, int key) {
 	s->iItems[++s->top] = key;
 }
 
+void sPush(stack *s, std::string key) {
+	s->strI[++s->top] = key;
+}
+
 char pop(stack *s) {
 	return s->items[s->top--];
 }
@@ -29,12 +36,20 @@ int iPop(stack *s) {
 	return s->iItems[s->top--];
 }
 
+std::string sPop(stack *s) {
+	return s->strI[s->top--];
+}
+
 char peek(stack *s) {
 	return s->items[s->top];
 }
 
 char iPeek(stack *s) {
 	return s->iItems[s->top];
+}
+
+std::string sPeek(stack *s) {
+	return s->strI[s->top];
 }
 
 bool empty(stack *s) {
@@ -46,6 +61,33 @@ bool empty(stack *s) {
 
 void startStack(stack *s) {
 	s->top = -1;
+}
+
+stack parser(std::string str) {
+	// Take an input string and break it up.
+	stack s;
+	startStack(&s);
+	std::string in = str;
+	in.erase(std::remove(in.begin(), in.end(), ' '), in.end()); // remove all spaces
+
+	int numOfEqSigns = std::count(in.begin(), in.end(), '='); // count number of equal signs
+
+
+															  // if no equal sign, throw error at user and quit
+	if (numOfEqSigns == 0) 
+	{ 
+		std::cout << "Expression cannot be compared."; 
+		outputFile << "Expression is invalid" << std::endl;
+		exit(1);
+	}
+
+	std::string inOne = in.substr(0, in.find('='));
+	std::string inTwo = in.substr(in.find('=') + 1, in.size());
+
+	sPush(&s, inOne);
+	sPush(&s, inTwo);
+
+	return s;
 }
 
 
@@ -119,7 +161,7 @@ bool orderCheck(char key1, char key2) {
 	else return false;
 }
 
-void postfixCalc(const char *str) {
+int postfixCalc(const char *str) {
 	stack s;
 	startStack(&s);
 	while (*str != '\0') {
@@ -149,106 +191,194 @@ void postfixCalc(const char *str) {
 			}
 			else {
 				std::cout << "Invalid Operation: " << *str;
+				outputFile << "Expression is invalid" << std::endl;
 				exit(1);
 			}
 		}
 		str++;
 	}
-	std::cout << iPop(&s);
+	return iPop(&s);
 }
 
-void infixToPostfix(const char *str) {
-	stack s;
-	//Stack<char> s;
+bool infixToPostfix(const char *str) {
+	stack s;			// current stack
 	startStack(&s);
 	char *out = (char *)malloc(strlen(str));
 	char *outp = out;
 
-	while (*str != '\0') {
-		// case 1: if '(' push to stack
-		if (*str == '(')
-		{
-			push(&s, '(');
+	stack inputStack; // store stack
+	startStack(&inputStack);
+	inputStack = parser(str);
+	stack outputStack; // result stack
+	startStack(&outputStack);
+
+	std::string strarry[2];
+	int it = 1;
+
+	while (!empty(&inputStack)) 
+	{
+		const char *tempString = sPop(&inputStack).c_str();
+		strarry[it--] = tempString;
+		
+		while (*str != '\0') {
+			// case 1: if '(' push to stack
+			if (*str == '(')
+			{
+				push(&s, '(');
+			}
+
+			// case 2: if ')' pop all from stack until '('
+			else if (*str == ')') {
+				while (!empty(&s) && peek(&s) != '(') {
+					*out = pop(&s);
+					out++;
+				}
+				if (!empty(&s)) pop(&s);
+			}
+			// case 3: If operator, pop all operator with more precedence. Push it to stack.
+			else if (isOperator(*str)) {
+				while (!empty(&s) && (!orderCheck(peek(&s), *str))) {
+					*out = pop(&s);
+					out++;
+				}
+				push(&s, *str);
+			}
+			// case 4: Add to postfix expression
+			else {
+				*out = *str;
+				out++;
+			}
+			str++; // next char
 		}
 
-		// case 2: if ')' pop all from stack until '('
-		else if (*str == ')') {
-			while (!empty(&s) && peek(&s) != '(') {
-				*out = pop(&s);
-				out++;
-			}
-			if (!empty(&s)) pop(&s);
-		}
-		// case 3: If operator, pop all operator with more precedence. Push it to stack.
-		else if (isOperator(*str)) {
-			while (!empty(&s) && (!orderCheck(peek(&s), *str))) {
-				*out = pop(&s);
-				out++;
-			}
-			push(&s, *str);
-		}
-		// case 4: Add to postfix expression
-		else {
-			*out = *str;
+		// empty out stack
+		while (!empty(&s)) {
+			*out = pop(&s);
 			out++;
 		}
-		str++; // next char
+		*out = '\0';
+		iPush(&outputStack, 0);//postfixCalc(outp));
 	}
-	// empty out stack
-	while (!empty(&s)) {
-		*out = pop(&s);
-		out++;
+	
+	//printf("%s\n", outp);
+	//std::string rstrarry[2];
+	//rstrarry[1] = sPop(&outputStack).c_str();
+	//rstrarry[0] = sPop(&outputStack).c_str();
+
+
+	//for (int i = strarry->size(), j = 0; i > 0; i--, j++) {
+	//	std::string str = rstrarry[j];
+
+	//	for (int i = strarry->size(), k = 1; i > 0; i--, k++) {
+
+	//		if (str != rstrarry[k])
+	//		{
+	//			std::cout << str << "!=" << rstrarry[k];
+	//			return false;
+	//		}
+	//		else
+	//		{
+	//			std::cout << str << "=" << rstrarry[k];
+	//		}
+	//	}
+	//}
+	if (outputStack.top != 1)
+	{
+		return false;
 	}
-	*out = '\0';
-	printf("%s\n", outp);
-	postfixCalc(outp);
+
+	return true;
 }
 
-void booleanVerifier(const char *str) {
-	stack s;
+bool booleanVerifier(const char *str) {
+	stack s;			// current stack
 	startStack(&s);
 	char *out = (char *)malloc(strlen(str));
 	char *outp = out;
 
-	while (*str != '\0') {
-		// case 1: if '(' push to stack
-		if (*str == '(')
-		{
-			push(&s, '(');
+	stack inputStack; // store stack
+	startStack(&inputStack);
+	inputStack = parser(str);
+	stack outputStack; // result stack
+	startStack(&outputStack);
+
+	std::string strarry[2];
+	int it = 1;
+
+	while (!empty(&inputStack))
+	{
+		const char *tempString = sPop(&inputStack).c_str();
+		strarry[it--] = tempString;
+
+		while (*str != '\0') {
+			// case 1: if '(' push to stack
+			if (*str == '(')
+			{
+				push(&s, '(');
+			}
+
+			// case 2: if ')' pop all from stack until '('
+			else if (*str == ')') {
+				while (!empty(&s) && peek(&s) != '(') {
+					*out = pop(&s);
+					out++;
+				}
+				if (!empty(&s)) pop(&s);
+			}
+			// case 3: If operator, pop all operator with more precedence. Push it to stack.
+			else if (isBoolOperator(*str)) {
+				while (!empty(&s) && (!orderBoolCheck(peek(&s), *str))) {
+					*out = pop(&s);
+					out++;
+				}
+				push(&s, *str);
+			}
+			// case 4: Add to postfix expression
+			else {
+				*out = *str;
+				out++;
+			}
+			str++; // next char
 		}
 
-		// case 2: if ')' pop all from stack until '('
-		else if (*str == ')') {
-			while (!empty(&s) && peek(&s) != '(') {
-				*out = pop(&s);
-				out++;
-			}
-			if (!empty(&s)) pop(&s);
-		}
-		// case 3: If operator, pop all operator with more precedence. Push it to stack.
-		else if (isBoolOperator(*str)) {
-			while (!empty(&s) && (!orderBoolCheck(peek(&s), *str))) {
-				*out = pop(&s);
-				out++;
-			}
-			push(&s, *str);
-		}
-		// case 4: Add to postfix expression
-		else {
-			*out = *str;
+		// empty out stack
+		while (!empty(&s)) {
+			*out = pop(&s);
 			out++;
 		}
-		str++; // next char
-	}
-	// empty out stack
-	while (!empty(&s)) {
-		*out = pop(&s);
-		out++;
+		*out = '\0';
+		//iPush(&outputStack, postfixCalc(outp));
+		iPush(&outputStack, 0);
 	}
 
-	*out = '\0';
-	printf("%s\n", outp);
-	postfixCalc(outp);
+	////printf("%s\n", outp);
+	//std::string rstrarry[2];
+	//rstrarry[1] = sPop(&outputStack).c_str();
+	//rstrarry[0] = sPop(&outputStack).c_str();
+
+
+	//for (int i = strarry->size(), j = 0; i > 0; i--, j++) {
+	//	std::string str = rstrarry[j];
+
+	//	for (int i = strarry->size(), k = 1; i > 0; i--, k++) {
+
+	//		if (str != rstrarry[k])
+	//		{
+	//			std::cout << str << "!=" << rstrarry[k];
+	//			return false;
+	//		}
+	//		else
+	//		{
+	//			std::cout << str << "=" << rstrarry[k];
+	//		}
+	//	}
+	//}
+	if (outputStack.top != 1)
+	{
+		return false;
+	}
+
+	return true;
 }
 
 bool isSetOperator(char operatorValue) {
@@ -259,51 +389,95 @@ bool isSetOperator(char operatorValue) {
 	return false;
 }
 
-void setVerifier(const char *str) {
-	stack s;
+bool setVerifier(const char *str) {
+	stack s;			// current stack
 	startStack(&s);
 	char *out = (char *)malloc(strlen(str));
 	char *outp = out;
 
-	while (*str != '\0') {
-		// case 1: if '(' push to stack
-		if (*str == '(')
-		{
-			push(&s, '(');
+	stack inputStack; // store stack
+	startStack(&inputStack);
+	inputStack = parser(str);
+	stack outputStack; // result stack
+	startStack(&outputStack);
+
+	std::string strarry[2];
+	int it = 1;
+
+	while (!empty(&inputStack))
+	{
+		const char *tempString = sPop(&inputStack).c_str();
+		strarry[it--] = tempString;
+
+		while (*str != '\0') {
+			// case 1: if '(' push to stack
+			if (*str == '(')
+			{
+				push(&s, '(');
+			}
+
+			// case 2: if ')' pop all from stack until '('
+			else if (*str == ')') {
+				while (!empty(&s) && peek(&s) != '(') {
+					*out = pop(&s);
+					out++;
+				}
+				if (!empty(&s)) pop(&s);
+			}
+			// case 3: If operator, pop all operator with more precedence. Push it to stack.
+			else if (isSetOperator(*str)) {
+				while (!empty(&s) && (!orderSetCheck(peek(&s), *str))) {
+					*out = pop(&s);
+					out++;
+				}
+				push(&s, *str);
+			}
+			// case 4: Add to postfix expression
+			else {
+				*out = *str;
+				out++;
+			}
+			str++; // next char
 		}
 
-		// case 2: if ')' pop all from stack until '('
-		else if (*str == ')') {
-			while (!empty(&s) && peek(&s) != '(') {
-				*out = pop(&s);
-				out++;
-			}
-			if (!empty(&s)) pop(&s);
-		}
-		// case 3: If operator, pop all operator with more precedence. Push it to stack.
-		else if (isSetOperator(*str)) {
-			while (!empty(&s) && (!orderSetCheck(peek(&s), *str))) {
-				*out = pop(&s);
-				out++;
-			}
-			push(&s, *str);
-		}
-		// case 4: Add to postfix expression
-		else {
-			*out = *str;
+		// empty out stack
+		while (!empty(&s)) {
+			*out = pop(&s);
 			out++;
 		}
-		str++; // next char
-	}
-	// empty out stack
-	while (!empty(&s)) {
-		*out = pop(&s);
-		out++;
+		*out = '\0';
+		//iPush(&outputStack, postfixCalc(outp));
+		iPush(&outputStack, 0);
 	}
 
-	*out = '\0';
-	printf("%s\n", outp);
-	postfixCalc(outp);
+	//printf("%s\n", outp);
+	//std::string rstrarry[2];
+	//rstrarry[1] = sPop(&outputStack).c_str();
+	//rstrarry[0] = sPop(&outputStack).c_str();
+
+
+	//for (int i = strarry->size(), j = 0; i > 0; i--, j++) {
+	//	std::string str = rstrarry[j];
+
+	//	for (int i = strarry->size(), k = 1; i > 0; i--, k++) {
+
+	//		if (str != rstrarry[k])
+	//		{
+	//			std::cout << str << "!=" << rstrarry[k];
+	//			return false;
+	//		}
+	//		else
+	//		{
+	//			std::cout << str << "=" << rstrarry[k];
+	//		}
+	//	}
+	//}
+	if (outputStack.top != 1)
+	{
+		return false;
+	}
+
+	return true;
 }
 
 
@@ -316,20 +490,20 @@ enum parserType {
 
 };
 
-void expressionparser(std::fstream &inputfile, parserType type)
+bool expressionParser(std::fstream &inputfile, parserType type, std::ofstream &outputFile)
 {
-	char ch;
+	char isChar;
 
-	while ((ch = inputfile.get()) != '\0') {
-		if (ch == ' ')
+	while ((isChar = inputfile.get()) != '\0') {
+		if (isChar == ' ')
 		{
 			continue;
 		}
-		if (ch == '\t')
+		if (isChar == '\t')
 		{
 			continue;
 		}
-		if (ch == '<')
+		if (isChar == '<')
 		{
 			//parse string
 			std::string str;
@@ -338,32 +512,57 @@ void expressionparser(std::fstream &inputfile, parserType type)
 			if (str == "algebra")
 			{
 				inputfile >> str;
-				expressionparser(inputfile, algebraType);
+				if (str != ">")
+				{
+					return false;
+				}
+				expressionParser(inputfile, algebraType, outputFile);
 			}
 			else if (str == "boolean")
 			{
 				inputfile >> str;
-				expressionparser(inputfile, booleanType);
+				if (str != ">")
+				{
+					return false;
+				}
+				expressionParser(inputfile, booleanType, outputFile);
 			}
 			else if (str == "sets")
 			{
 				inputfile >> str;
-				expressionparser(inputfile, setType);
+				if (str != ">")
+				{
+					return false;
+				}
+				expressionParser(inputfile, setType, outputFile);
 			}
 			else if (str == "strings")
 			{
 				inputfile >> str;
-				expressionparser(inputfile, stringType);
+				if (str != ">")
+				{
+					return false;
+				}
+				expressionParser(inputfile, stringType, outputFile);
 			}
 			else if (str == "/")
 			{
 				inputfile >> str;
-				return;
+				if (str != ">")
+				{
+					return false;
+				}
+				return true;
+			}
+			else
+			{
+				return false;
 			}
 
 			continue;
 		}
 
+		std::string stringsString;
 		std::string algString;
 		std::string booleanString;
 		std::string setString;
@@ -372,96 +571,132 @@ void expressionparser(std::fstream &inputfile, parserType type)
 		{
 		case algebraType:
 
-			while ((ch = inputfile.get()) != '\0')
+			while ((isChar = inputfile.get()) != '\0')
 			{
-				if (ch != '<' && ch != ';')
+				if (isChar != '<' && isChar != ';')
 				{
-					algString += ch;
+					algString += isChar;
 				}
 				else
 					break;
 			}
-			if (ch == '<')
+			if (isChar == '<')
 			{
 				inputfile.putback('<');
 			}
 
-			infixToPostfix(algString.c_str());
+			//outputFile << "Expression is = " << infixToPostfix(algString.c_str()) << std::endl;
+			if (!infixToPostfix(algString.c_str()))
+			{
+				return false;
+			}
+
 			break;
 
 		case booleanType:
-			while ((ch = inputfile.get()) != '\0')
+			while ((isChar = inputfile.get()) != '\0')
 			{
-				if (ch != '<')
+				if (isChar != '<' && isChar != ';')
 				{
-					if (ch == '=')
+					if (isChar == '=')
 					{
 						booleanVerifier(booleanString.c_str());
 						booleanString = "";
 						continue;
 					}
 
-					if (ch == '0' || ch == '1' || ch == '+' || ch == '*')
+					if (isChar == '0' || isChar == '1' || isChar == '+' || isChar == '*')
 					{
-						booleanString += ch;
+						booleanString += isChar;
 					}
-					else if (ch != ' ')
+					else if (isChar != ' ')
 					{
 						std::cout << "Invalid characters for Boolean" << std::endl;
 					}
 				}
 			}
 
-			if (ch == '<')
+			if (isChar == '<')
 			{
 				inputfile.putback('<');
 			}
 
-			booleanVerifier(booleanString.c_str());
+			//outputFile << "Expression is = " << booleanVerifier(booleanString.c_str()) << std::endl;
+
+			if (!booleanVerifier(booleanString.c_str()))
+			{
+				return false;
+			}
 			
 			break;
 
 		case stringType:
-			while ((ch = inputfile.get()) != '\0')
+			while ((isChar = inputfile.get()) != '\0')
 			{
-
-			}
-
-			if (ch == '<')
-			{
-				inputfile.putback('<');
-			}
-
-			break;
-
-		case setType:
-			while ((ch = inputfile.get()) != '\0')
-			{
-				if (ch != '<' && ch != ';')
+				if (isChar != '<' && isChar != ';')
 				{
-					if (ch == '=')
+					if (isChar == '=')
 					{
 						setVerifier(setString.c_str());
 						setString = "";
 						continue;
 					}
-					if (ch == '+' || ch == '*' || ch == '{' || ch == '}' || ch == '(' || ch == ')' || (ch >= '0' && ch <= '9'))
+					if (isChar == '+' || isChar == '*' || isChar == '{' || isChar == '}' || isChar == '(' || isChar == ')' || (isChar >= '0' && isChar <= '9') || (isChar >= 'a' && isChar <= 'z'))
 					{
-						setString += ch;
+						setString += isChar;
 					}
-					else if (ch != ' ')
+					else if (isChar != ' ')
 					{
 						std::cout << "Invalid characters for Set" << std::endl;
 					}
 				}
 			}
 
-			if (ch == '<')
+			if (isChar == '<')
 			{
 				inputfile.putback('<');
 			}
 
-			setVerifier(setString.c_str());
+			//outputFile << "Expression is = " << infixToPostfix(stringsString.c_str()) << std::endl;
+			if (!setVerifier(stringsString.c_str()))
+			{
+				return false;
+			}
+
+			break;
+
+		case setType:
+			while ((isChar = inputfile.get()) != '\0')
+			{
+				if (isChar != '<' && isChar != ';')
+				{
+					if (isChar == '=')
+					{
+						setVerifier(setString.c_str());
+						setString = "";
+						continue;
+					}
+					if (isChar == '+' || isChar == '*' || isChar == '{' || isChar == '}' || isChar == '(' || isChar == ')' || (isChar >= '0' && isChar <= '9'))
+					{
+						setString += isChar;
+					}
+					else if (isChar != ' ')
+					{
+						std::cout << "Invalid characters for Set" << std::endl;
+					}
+				}
+			}
+
+			if (isChar == '<')
+			{
+				inputfile.putback('<');
+			}
+
+			//outputFile << "Expression is = " << setVerifier(setString.c_str()) << std::endl;
+			if (!setVerifier(setString.c_str()))
+			{
+				return false;
+			}
 			break;
 
 		case nonType:
@@ -469,37 +704,27 @@ void expressionparser(std::fstream &inputfile, parserType type)
 		}
 
 	}
+	return true;
 }
 
 int main(int argc, char *argv[])
 {
-	// Instantiate stack.
-	// std::vector<std::streamoff> callStack;
-	//binaryTree BSTree;
-
 	std::string singleLine = "";
 	std::fstream inputFile("input.txt", std::ios_base::in | std::ios_base::binary);
-	std::ofstream outputFile("outputFile.txt");
-	//stack.assignLabels(inputFile); // Assign labels to a line number.
+
 
 	std::cout << "\nThe following is what the input file contains: \n\n";
 
 	if (inputFile.is_open())
 	{
-		//while (!inputFile.eof() && getline(inputFile, singleLine))
-		//{
-		//	std::cout << singleLine << std::endl;
-		//	//BSTree.insertNodeIntoTree(singleLine, BSTree.rootPointer);
-
-		//	
-
-		//}
-		expressionparser(inputFile, nonType);
-
-		std::cout << "=======================================Below is what the outcome looks like:" << std::endl;
-
-		//BSTree.postOrder(BSTree.rootPointer);
-		infixToPostfix(singleLine.c_str());
+		if (expressionParser(inputFile, nonType, outputFile))
+		{
+			outputFile << "Expression is valid" << std::endl;
+		}
+		else
+		{
+			outputFile << "Expression is invalid" << std::endl;
+		}
 
 		inputFile.close();
 	}
